@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Búsqueda de Productos</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+  <script src="js/productos.js" defer></script>
+  <style>
+    /* Fondo general */
+    body {
+      background-image: url('img/Fondo_general.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+    }
+
+    /* Fondo con imagen para encabezado */
+    header {
+      background-image: url('img/Fondo_Menu.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: #fff;
+      padding: 60px 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 500;
+      position: relative;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); /* Oscurecer */
+      z-index: 0;
+    }
+
+    header * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Fondo blanco para contenido principal */
+    .contenedor-blanco {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 1200px;
+      margin: 30px auto;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Buscar Productos</h1>
+    <nav id="menuNavegacion"></nav>
+  </header>
+
+  <main class="contenedor-blanco">
+    <section style="text-align: center; margin-bottom: 20px;">
+      <input 
+        type="text" 
+        id="campoBusqueda" 
+        placeholder="Buscar por nombre o categoría..." 
+        style="padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;"
+      />
+      <button class="boton" onclick="buscarProducto()">🔍 Buscar</button>
+    </section>
+
+    <h2 style="text-align: center;">Resultados de Búsqueda</h2>
+    <div id="resultadosBusqueda" class="catalogo"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 MovilCenterStore</p>
+  </footer>
+
+  <script>
+    function buscarProducto() {
+      const termino = document.getElementById("campoBusqueda").value.toLowerCase();
+      const resultados = productos.filter(p =>
+        p.nombre.toLowerCase().includes(termino) ||
+        p.categoria.toLowerCase().includes(termino)
+      );
+      mostrarResultados(resultados);
+    }
+
+    function mostrarResultados(lista) {
+      const contenedor = document.getElementById("resultadosBusqueda");
+      contenedor.innerHTML = "";
+
+      if (lista.length === 0) {
+        contenedor.innerHTML = "<p style='text-align:center;'>No se encontraron productos.</p>";
+        return;
+      }
+
+      lista.forEach(producto => {
+        const div = document.createElement("div");
+        div.className = "producto";
+        div.innerHTML = `
+          <img src="${producto.imagen}" alt="${producto.nombre}" onclick="verDetalle(${producto.id})" />
+          <h3>${producto.nombre}</h3>
+          <p><strong>Precio:</strong> $${parseInt(producto.precio).toLocaleString()}</p>
+          <button class="boton" onclick="agregarAlCarrito(${producto.id})">Agregar al carrito</button>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function verDetalle(id) {
+      window.location.href = `detalle.html?id=${id}`;
+    }
+
+    function agregarAlCarrito(id) {
+      const usuario = localStorage.getItem("usuarioLogueado");
+      if (!usuario) {
+        localStorage.setItem("productoPendiente", JSON.stringify({ id, cantidad: 1 }));
+        localStorage.setItem("reagregarDesdeLogin", "true");
+        alert("Debes iniciar sesión para agregar productos al carrito.");
+        window.location.href = "registro.html";
+        return;
+      }
+
+      const producto = productos.find(p => p.id === id);
+      if (!producto) {
+        alert("Producto no encontrado.");
+        return;
+      }
+
+      const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+      const index = carrito.findIndex(item => item.id === id);
+
+      if (index >= 0) {
+        carrito[index].cantidad += 1;
+      } else {
+        carrito.push({ ...producto, cantidad: 1 });
+      }
+
+      localStorage.setItem("carrito", JSON.stringify(carrito));
+      alert("✅ Producto agregado al carrito");
+      mostrarMenuUsuario();
+    }
+
+    function mostrarMenuUsuario() {
+      const nav = document.getElementById("menuNavegacion");
+      const usuarioObj = JSON.parse(localStorage.getItem("usuarioLogueado"));
+      const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+      const totalItems = carrito.reduce((total, item) => total + item.cantidad, 0);
+
+      if (usuarioObj) {
+        nav.innerHTML = `
+          <a href="index.html">Inicio</a> |
+          <a href="busqueda.html">Búsqueda básica</a> |
+          <a href="busqueda-avanzada.html">Búsqueda avanzada</a> |
+          <a href="carrito.html">Carrito 🛒 (${totalItems})</a> |
+          👤 ${usuarioObj.nombre} |
+          <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
+        `;
+      } else {
+        nav.innerHTML = `
+          <a href="index.html">Inicio</a> |
+          <a href="registro.html">Registro / Iniciar sesión</a>
+        `;
+      }
+    }
+
+    function cerrarSesion() {
+      localStorage.removeItem("usuarioLogueado");
+      localStorage.removeItem("carrito");
+      window.location.href = "index.html";
+    }
+
+    window.onload = function () {
+      cargarProductosDesdeBackend(() => {
+        mostrarMenuUsuario();
+      });
+    };
+  </script>
+</body>
+</html>

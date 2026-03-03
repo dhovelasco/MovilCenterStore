@@ -1,0 +1,43 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar Sesión - MovilCenterStore</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header>
+    <h1>MovilCenterStore - Iniciar Sesión</h1>
+  </header>
+
+  <main style="text-align:center;">
+    <form onsubmit="iniciarSesion(event)">
+      <p><input type="text" id="usuario" placeholder="Nombre de usuario" required></p>
+      <p><input type="password" id="clave" placeholder="Contraseña" required></p>
+      <button type="submit">Ingresar</button>
+    </form>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 MovilCenterStore</p>
+  </footer>
+
+  <script>
+    function iniciarSesion(e) {
+      e.preventDefault();
+      const usuario = document.getElementById('usuario').value;
+      const clave = document.getElementById('clave').value;
+
+      // Usuario de prueba:
+      if (usuario === 'cliente' && clave === '1234') {
+        localStorage.setItem('usuarioLogueado', usuario);
+        alert('Inicio de sesión exitoso');
+        window.location.href = 'index.html';
+      } else {
+        alert('Credenciales inválidas');
+      }
+    }
+  </script>
+</body>
+</html>

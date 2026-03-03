@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Registro / Iniciar Sesión</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background-image: url('img/Fondo_general.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    header {
+      background-image: url('img/Fondo_Menu.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: #fff;
+      padding: 60px 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 500;
+      position: relative;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 0;
+    }
+
+    header * {
+      position: relative;
+      z-index: 1;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 500;
+    }
+
+    .contenedor-blanco {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 600px;
+      margin: 40px auto;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .formulario {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-estilizado {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .boton {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .boton:hover {
+      background-color: #2563eb;
+    }
+
+    footer {
+      background-color: #1f2937;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      margin-top: 40px;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    hr {
+      margin: 40px 0;
+      border: none;
+      border-top: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body onload="mostrarMenuUsuario();">
+  <header>
+    <h1>Registro / Iniciar Sesión</h1>
+    <nav id="menuPrincipal"></nav>
+  </header>
+
+  <main class="contenedor-blanco">
+    <section style="margin-bottom: 40px;">
+      <h2 style="text-align: center;">📝 Registrarse</h2>
+      <form id="formRegistro" onsubmit="registrarUsuario(event)" class="formulario">
+        <input type="text" id="nombre" placeholder="Nombre completo" required class="input-estilizado" />
+        <input type="email" id="correo" placeholder="Correo electrónico" required class="input-estilizado" />
+        <input type="password" id="clave" placeholder="Contraseña" required class="input-estilizado" />
+        <button type="submit" class="boton">Registrarse</button>
+      </form>
+    </section>
+
+    <hr>
+
+    <section>
+      <h2 style="text-align: center;">🔐 Iniciar Sesión</h2>
+      <form id="formLogin" onsubmit="iniciarSesion(event)" class="formulario">
+        <input type="email" id="loginCorreo" placeholder="Correo electrónico" required class="input-estilizado" />
+        <input type="password" id="loginClave" placeholder="Contraseña" required class="input-estilizado" />
+        <button type="submit" class="boton">Iniciar Sesión</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 MovilCenterStore</p>
+  </footer>
+
+  <script>
+    function mostrarMenuUsuario() {
+      const usuario = JSON.parse(localStorage.getItem("usuarioLogueado"));
+      const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+      const totalProductos = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+      const carritoTexto = `Carrito 🛒${totalProductos > 0 ? ` (${totalProductos})` : ""}`;
+      const menu = document.getElementById("menuPrincipal");
+
+      if (usuario) {
+        menu.innerHTML = `
+          <a href="index.html">Inicio</a> |
+          <a href="busqueda.html">Búsqueda Básica</a> |
+          <a href="busqueda-avanzada.html">Búsqueda Avanzada</a> |
+          <a href="carrito.html">${carritoTexto}</a> |
+          <span>👤 ${usuario.nombre}</span> |
+          <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>
+        `;
+      } else {
+        menu.innerHTML = `
+          <a href="index.html">Inicio</a> |
+          <a href="busqueda.html">Búsqueda Básica</a> |
+          <a href="busqueda-avanzada.html">Búsqueda Avanzada</a> |
+          <a href="registro.html">Registro / Iniciar sesión</a>
+        `;
+      }
+    }
+
+    function cerrarSesion() {
+      localStorage.removeItem("usuarioLogueado");
+      alert("Sesión cerrada exitosamente.");
+      location.reload();
+    }
+
+    function registrarUsuario(event) {
+      event.preventDefault();
+      const nombre = document.getElementById("nombre").value.trim();
+      const correo = document.getElementById("correo").value.trim();
+      const clave = document.getElementById("clave").value;
+
+      const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+      const existe = usuarios.some(u => u.correo === correo);
+
+      if (existe) {
+        alert("El correo ya está registrado.");
+        return;
+      }
+
+      usuarios.push({ nombre, correo, clave });
+      localStorage.setItem("usuarios", JSON.stringify(usuarios));
+      alert("Registro exitoso. Ahora puedes iniciar sesión.");
+      document.getElementById("formRegistro").reset();
+    }
+
+    function iniciarSesion(event) {
+      event.preventDefault();
+      const correo = document.getElementById("loginCorreo").value.trim();
+      const clave = document.getElementById("loginClave").value;
+
+      const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+      const usuario = usuarios.find(u => u.correo === correo && u.clave === clave);
+
+      if (!usuario) {
+        alert("Correo o contraseña incorrectos.");
+        return;
+      }
+
+      localStorage.setItem("usuarioLogueado", JSON.stringify(usuario));
+      alert(`¡Bienvenido, ${usuario.nombre}!`);
+
+      const pendiente = JSON.parse(localStorage.getItem("productoPendiente"));
+      const desdeLogin = localStorage.getItem("reagregarDesdeLogin");
+
+      if (pendiente && desdeLogin === "true") {
+        const productos = JSON.parse(localStorage.getItem("productos")) || [];
+        const producto = productos.find(p => p.id === pendiente.id);
+        if (producto) {
+          const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+          const index = carrito.findIndex(item => item.id === producto.id);
+          if (index >= 0) {
+            carrito[index].cantidad += pendiente.cantidad;
+          } else {
+            carrito.push({ ...producto, cantidad: pendiente.cantidad });
+          }
+          localStorage.setItem("carrito", JSON.stringify(carrito));
+        }
+        localStorage.removeItem("productoPendiente");
+        localStorage.removeItem("reagregarDesdeLogin");
+      }
+
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

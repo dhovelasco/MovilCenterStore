@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle del Producto - MovilCenterStore</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/productos.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const id = localStorage.getItem("verProductoId");
+      const producto = productos.find(p => p.id == id);
+      const contenedor = document.getElementById("detalle");
+
+      if (!producto) {
+        contenedor.innerHTML = "<p>Producto no encontrado.</p>";
+        return;
+      }
+
+      contenedor.innerHTML = `
+        <h2>${producto.nombre}</h2>
+        <img src="${producto.imagen}" alt="${producto.nombre}" class="imagen-grande" />
+        <p><strong>Descripción:</strong> ${producto.descripcion}</p>
+        <p><strong>Categoría:</strong> ${producto.categoria}</p>
+        <p><strong>Precio:</strong> $${producto.precio}</p>
+        <p><strong>Stock disponible:</strong> ${producto.stock}</p>
+        <button onclick="agregarAlCarrito(${producto.id})">Agregar al carrito</button>
+      `;
+    });
+  </script>
+  <style>
+    .imagen-grande {
+      max-width: 300px;
+      display: block;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MovilCenterStore</h1>
+    <nav>
+      <a href="index.html">Inicio</a> |
+      <a href="carrito.html">Carrito 🛒</a> |
+      <a href="registro.html">Cuenta</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Detalle del Producto</h2>
+    <div id="detalle"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 MovilCenterStore - Todos los derechos reservados</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# NetBeans / Java
+nbproject/private/
+build/
+dist/
+*.class
+*.war
+
+# Sistema
+.DS_Store
+Thumbs.db

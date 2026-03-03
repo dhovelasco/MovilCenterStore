@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Búsqueda Avanzada</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+  <script src="js/productos.js" defer></script>
+  <style>
+    body {
+      background-image: url('img/Fondo_general.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    header {
+      background-image: url('img/Fondo_Menu.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: #fff;
+      padding: 60px 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 500;
+      position: relative;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 0;
+    }
+
+    header *, nav * {
+      position: relative;
+      z-index: 1;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 500;
+    }
+
+    main {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      margin: 40px auto;
+      max-width: 800px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    footer {
+      background-color: #1f2937;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      margin-top: 40px;
+    }
+
+    form label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    form input, form select, form button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    form button {
+      background-color: #3b82f6;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    form button:hover {
+      background-color: #2563eb;
+    }
+
+    .producto {
+      background-color: #f9f9f9;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .producto img {
+      width: 150px;
+      height: auto;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .producto button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #27ae60;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .producto button:hover {
+      background-color: #219150;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Búsqueda Avanzada</h1>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <span id="menuOpciones"></span> |
+      <span id="menuUsuario">
+        <a href="registro.html">Registro / Iniciar sesión</a>
+      </span>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Filtrar Productos</h2>
+    <form id="formAvanzado" onsubmit="buscarAvanzado(event)">
+      <label for="categoria">Categoría:</label>
+      <select id="categoria">
+        <option value="">-- Todas --</option>
+      </select>
+
+      <label for="marca">Marca:</label>
+      <input type="text" id="marca" placeholder="Ej: Samsung" />
+
+      <label for="precioMin">Precio mínimo:</label>
+      <input type="number" id="precioMin" min="0" />
+
+      <label for="precioMax">Precio máximo:</label>
+      <input type="number" id="precioMax" min="0" />
+
+      <button type="submit">Buscar</button>
+    </form>
+
+    <hr>
+
+    <div id="resultados" class="catalogo"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 MovilCenterStore</p>
+  </footer>
+
+  <script>
+    let productos = [];
+
+    function mostrarMenuUsuario() {
+      const usuario = JSON.parse(localStorage.getItem("usuarioLogueado"));
+      const menuUsuario = document.getElementById("menuUsuario");
+      const menuOpciones = document.getElementById("menuOpciones");
+
+      if (usuario) {
+        const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+        const totalProductos = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+        const carritoTexto = `Carrito 🛒${totalProductos > 0 ? ` (${totalProductos})` : ""}`;
+
+        menuUsuario.innerHTML = `👤 ${usuario.nombre} | <a href="#" onclick="cerrarSesion()">Cerrar sesión</a>`;
+        menuOpciones.innerHTML = `
+          | <a href="busqueda.html">Búsqueda Básica</a>
+          | <a href="busqueda-avanzada.html">Búsqueda Avanzada</a>
+          | <a href="carrito.html">${carritoTexto}</a>
+        `;
+      } else {
+        menuUsuario.innerHTML = `<a href="registro.html">Registro / Iniciar sesión</a>`;
+        menuOpciones.innerHTML = ``;
+      }
+    }
+
+    function cerrarSesion() {
+      localStorage.removeItem("usuarioLogueado");
+      location.reload();
+    }
+
+    function cargarCategorias() {
+      const select = document.getElementById("categoria");
+      const categorias = [...new Set(productos.map(p => p.categoria))];
+
+      categorias.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat.toLowerCase();
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
+    function buscarAvanzado(event) {
+      event.preventDefault();
+      const categoria = document.getElementById("categoria").value.toLowerCase();
+      const marca = document.getElementById("marca").value.toLowerCase();
+      const precioMin = parseFloat(document.getElementById("precioMin").value);
+      const precioMax = parseFloat(document.getElementById("precioMax").value);
+
+      const resultados = productos.filter(p => {
+        return (
+          (!categoria || p.categoria.toLowerCase() === categoria) &&
+          (!marca || p.marca.toLowerCase().includes(marca)) &&
+          (isNaN(precioMin) || p.precio >= precioMin) &&
+          (isNaN(precioMax) || p.precio <= precioMax)
+        );
+      });
+
+      mostrarResultados(resultados);
+    }
+
+    function mostrarResultados(lista) {
+      const contenedor = document.getElementById("resultados");
+      contenedor.innerHTML = "";
+
+      if (lista.length === 0) {
+        contenedor.innerHTML = "<p>No se encontraron productos con esos criterios.</p>";
+        return;
+      }
+
+      lista.forEach(producto => {
+        const div = document.createElement("div");
+        div.className = "producto";
+        div.innerHTML = `
+          <img src="${producto.imagen}" alt="${producto.nombre}" onclick="verDetalle(${producto.id})">
+          <h3>${producto.nombre}</h3>
+          <p><strong>Marca:</strong> ${producto.marca}</p>
+          <p><strong>Precio:</strong> $${parseInt(producto.precio).toLocaleString()}</p>
+          <button onclick="agregarAlCarrito(${producto.id})">Agregar al carrito</button>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function verDetalle(id) {
+      window.location.href = `detalle.html?id=${id}`;
+    }
+
+    function agregarAlCarrito(id) {
+      const usuario = localStorage.getItem("usuarioLogueado");
+      if (!usuario) {
+        localStorage.setItem("productoPendiente", JSON.stringify({ id, cantidad: 1 }));
+        localStorage.setItem("reagregarDesdeLogin", "true");
+        alert("Debes iniciar sesión para agregar productos al carrito.");
+        window.location.href = "registro.html";
+        return;
+      }
+
+      const producto = productos.find(p => p.id === id);
+      if (!producto) {
+        alert("Producto no encontrado.");
+        return;
+      }
+
+      const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+      const index = carrito.findIndex(item => item.id === id);
+
+      if (index >= 0) {
+        carrito[index].cantidad += 1;
+      } else {
+        carrito.push({ ...producto, cantidad: 1 });
+      }
+
+      localStorage.setItem("carrito", JSON.stringify(carrito));
+      alert("Producto agregado al carrito");
+    }
+
+    window.onload = function () {
+      mostrarMenuUsuario();
+
+      fetch("http://localhost:3000/api/productos")
+        .then(res => res.json())
+        .then(data => {
+          productos = data;
+          cargarCategorias();
+        })
+        .catch(err => {
+          console.error("Error al cargar productos:", err);
+          document.getElementById("resultados").innerHTML = "<p>Error al cargar productos.</p>";
+        });
+    };
+  </script>
+</body>
+</html>
