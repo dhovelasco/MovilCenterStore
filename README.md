@@ -5,7 +5,7 @@ Tienda virtual desarrollada como proyecto universitario para demostrar conocimie
 ## Tecnologías
 - **Frontend:** HTML5, CSS3, JavaScript
 - **Backend:** Node.js (`server.js`) con productos en memoria para demo
-- **Base de datos original:** SQLite/MySQL (`movilcenter_backup.sql`) — opcional, solo si quieres restaurar datos
+- **Base de datos original:** SQLite/MySQL (`movilcenter_backup.sql`) 
 
 ## Estructura de carpetas
 MovilCenterStore/
